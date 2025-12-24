@@ -1,6 +1,6 @@
 import type { Incident, IncidentStatus, IncidentTimelineResponse, SimilarIncidentResponse, AnalysisResponse, IncidentStatsResponse, SearchOptions, BaselineAnalysisResponse, IncidentRequest } from '../types';
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loom-production-d02f.up.railway.app/api';
 const INCIDENTS_ENDPOINT = `${API_BASE_URL}/incidents`;
 
 export const api = {
