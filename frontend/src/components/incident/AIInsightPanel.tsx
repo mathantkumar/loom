@@ -1,7 +1,6 @@
 import React from 'react';
-import { Sparkles, TrendingUp, History, Clock } from 'lucide-react';
-import type { Incident, AnalysisResponse, IncidentStatus } from '../../types';
-import { HealthConfidence } from './HealthConfidence';
+import { Sparkles, History, Clock } from 'lucide-react';
+import type { Incident, AnalysisResponse } from '../../types';
 
 interface AIInsightPanelProps {
     incident: Incident;

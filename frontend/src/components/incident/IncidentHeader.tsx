@@ -1,12 +1,12 @@
 import React from 'react';
-import { Bot, CheckCircle2, AlertTriangle, Activity } from 'lucide-react';
+import { Bot } from 'lucide-react';
 import { SeverityBadge } from '../ui/Badge';
 import { StatusSelect } from '../StatusSelect';
 import type { Incident, IncidentStatus } from '../../types';
 
 interface IncidentHeaderProps {
     incident: Incident;
-    onStatusChange: (status: IncidentStatus) => void;
+    onStatusChange: (status: IncidentStatus) => Promise<void>;
     aiSummary?: string;
 }
 

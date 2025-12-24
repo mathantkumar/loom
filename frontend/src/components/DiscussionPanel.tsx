@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Send, User } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { api } from '../api/client';
 import { Button } from './ui/Button';
 
