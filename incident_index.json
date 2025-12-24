@@ -1,0 +1,62 @@
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "refresh_interval": "1s",
+    "analysis": {
+      "analyzer": {
+        "default": {
+          "type": "english"
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "incident_id": {
+        "type": "keyword"
+      },
+      "title": {
+        "type": "text",
+        "analyzer": "english",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "description": {
+        "type": "text",
+        "analyzer": "english"
+      },
+      "severity": {
+        "type": "keyword"
+      },
+      "status": {
+        "type": "keyword"
+      },
+      "service": {
+        "type": "keyword"
+      },
+      "created_at": {
+        "type": "date"
+      },
+      "resolved_at": {
+        "type": "date"
+      },
+      "root_cause": {
+        "type": "text"
+      },
+      "issueType": {
+        "type": "keyword"
+      },
+      "embedding": {
+        "type": "dense_vector",
+        "dims": 384,
+        "index": true,
+        "similarity": "cosine"
+      }
+    }
+  }
+}
