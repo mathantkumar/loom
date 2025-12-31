@@ -25,3 +25,11 @@ export function CardContent({ children, className = '' }: { children: React.Reac
         </div>
     );
 }
+
+export function CardTitle({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+    return (
+        <h3 className={`text-lg font-semibold text-gray-900 ${className}`}>
+            {children}
+        </h3>
+    );
+}

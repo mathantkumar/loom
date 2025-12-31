@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: incident-service
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/loom
+    username: loom
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  elasticsearch:
+    uris: http://localhost:9200
+    username: 
+    password: 
+    socket-timeout: 60s
+    connection-timeout: 5s
+
+loom:
+  openai:
+    base-url: ${OPENAI_BASE_URL:http://localhost:11434/v1}
+    api-key: ${OPENAI_API_KEY:ollama}
+    model: ${OPENAI_MODEL:mistral}
+  cors:
+    allowed-origins: http://localhost:5173
+
+logging:
+  level:
+    root: INFO
+    com.loom: DEBUG
+
+server:
+  compression:
+    enabled: false
+
+ollama:
+  base-url: http://127.0.0.1:11434
+  llm-model: mixtral
+  embed-model: nomic-embed-text
+  max-concurrent-generations: 2
+
+faiss:
+  index-path: ./data/incident.index
+  metadata-path: ./data/metadata.json
+
+retrieval:
+  top-k: 5

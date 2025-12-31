@@ -62,9 +62,11 @@ public class IncidentService {
     public Incident createIncident(Incident incident) {
         // 0. Generate Public ID if missing
         if (incident.getPublicId() == null) {
+            // Use DB Sequence for guaranteed uniqueness and "INCSEN-####" format
+            // Sequence 'incident_id_seq' starts at 1000
             Long nextSeq = incidentRepository.getNextSequenceValue();
             incident.setSequenceId(nextSeq);
-            incident.setPublicId("INCLO-" + nextSeq);
+            incident.setPublicId("INCSEN-" + nextSeq);
         }
 
         // Core Logic: Correlate with CI/CD
@@ -73,9 +75,6 @@ public class IncidentService {
                     incident.getService(), "prod"); // Defaulting to 'prod' for correlation for now
 
             if (!recentDeployments.isEmpty()) {
-                incident.setCorrelatedDeployments(recentDeployments);
-
-                // Simple AI Insight Generation (Heuristic)
                 com.loom.integration.cicd.Deployment latest = recentDeployments.get(0);
                 long minutesAgo = java.time.temporal.ChronoUnit.MINUTES.between(latest.getDeploymentTime(),
                         java.time.Instant.now());
@@ -84,6 +83,36 @@ public class IncidentService {
                                 minutesAgo, incident.getService(), latest.getAuthor(),
                                 latest.getCommitHash().substring(0, 7)));
             }
+        }
+
+        // Feature 3: Recurring Incident Check (Pattern Awareness)
+        try {
+            // Check past 30 days similarity
+            List<com.loom.incident.service.IncidentIndexService.ResolvedIncidentDto> similar = incidentIndexService
+                    .findSimilarIncidents(incident.getDescription(), 10);
+
+            long similarCount = similar.stream()
+                    .filter(s -> s.getScore() != null && s.getScore() > 0.85) // High similarity threshold
+                    .count();
+
+            if (similarCount > 0) {
+                incident.setRecurring(true);
+                incident.setRecurringCount((int) similarCount + 1); // +1 for current
+
+                // Find first seen (oldest similar)
+                java.time.Instant oldest = java.time.Instant.now();
+                for (com.loom.incident.service.IncidentIndexService.ResolvedIncidentDto s : similar) {
+                    if (s.getScore() != null && s.getScore() > 0.85 && s.getCreatedAt() != null) {
+                        java.time.Instant created = java.time.Instant.parse(s.getCreatedAt());
+                        if (created.isBefore(oldest)) {
+                            oldest = created;
+                        }
+                    }
+                }
+                incident.setFirstSeen(oldest);
+            }
+        } catch (Exception e) {
+            logger.warn("Failed to check for recurring incidents: {}", e.getMessage());
         }
 
         // 1. Save to PostgreSQL (Primary Source of Truth)

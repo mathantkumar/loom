@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Badge } from './ui/Badge';
 import { Avatar } from './ui/Avatar';
 import type { Incident } from '../types';
@@ -20,6 +20,23 @@ export const IncidentTable: React.FC<IncidentTableProps> = ({
     hasFilters = false,
     onClearFilters
 }) => {
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
+    // Reset to first page when incidents change (e.g. filtering)
+    React.useEffect(() => {
+        setCurrentPage(1);
+    }, [incidents.length, hasFilters]);
+
+    const totalPages = Math.ceil(incidents.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const currentIncidents = incidents.slice(startIndex, startIndex + itemsPerPage);
+
+    const handlePageChange = (newPage: number) => {
+        if (newPage >= 1 && newPage <= totalPages) {
+            setCurrentPage(newPage);
+        }
+    };
     if (isLoading) {
         return (
             <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
@@ -71,14 +88,14 @@ export const IncidentTable: React.FC<IncidentTableProps> = ({
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                        {incidents.map((incident) => {
-                            const isSelected = selectedId === incident.id;
-                            const isSev1 = incident.severity === 'SEV1';
+                        {currentIncidents.map((incidents: Incident) => {
+                            const isSelected = selectedId === incidents.id;
+                            const isSev1 = incidents.severity === 'SEV1';
 
                             return (
                                 <tr
-                                    key={incident.id}
-                                    onClick={() => onSelect(incident)}
+                                    key={incidents.id}
+                                    onClick={() => onSelect(incidents)}
                                     className={`group hover:bg-gray-50 cursor-pointer transition-colors duration-150 
                                         ${isSelected ? 'bg-blue-50' : ''}
                                         ${isSev1 && !isSelected ? 'bg-red-50' : ''}
@@ -93,36 +110,36 @@ export const IncidentTable: React.FC<IncidentTableProps> = ({
                                         />
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500">
-                                        #{incident.id ? incident.id.split('-')[0] : '???'}
+                                        {incidents.publicId || incidents.id.substring(0, 8)}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-gray-900 truncate max-w-sm" title={incident.title}>
-                                            {incident.title}
+                                        <div className="text-sm font-medium text-gray-900 truncate max-w-sm" title={incidents.title}>
+                                            {incidents.title}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {incident.service}
+                                        {incidents.service}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        {incident.assignee ? (
+                                        {incidents.assignee ? (
                                             <div className="flex items-center gap-2">
-                                                <Avatar name={incident.assignee.name} src={incident.assignee.avatarUrl} size="sm" />
-                                                <span className="text-sm text-gray-700">{incident.assignee.name}</span>
+                                                <Avatar name={incidents.assignee.name} src={incidents.assignee.avatarUrl} size="sm" />
+                                                <span className="text-sm text-gray-700">{incidents.assignee.name}</span>
                                             </div>
                                         ) : (
                                             <span className="text-sm text-gray-400 italic">Unassigned</span>
                                         )}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <Badge variant={incident.severity}>{incident.severity}</Badge>
+                                        <Badge variant={incidents.severity}>{incidents.severity}</Badge>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <Badge variant={incident.status === 'PENDING_CONFIRMATION' ? 'outline' : incident.status}>
-                                            {incident.status.replace('_', ' ')}
+                                        <Badge variant={incidents.status === 'PENDING_CONFIRMATION' ? 'outline' : incidents.status}>
+                                            {incidents.status.replace('_', ' ')}
                                         </Badge>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {new Date(incident.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                        {new Date(incidents.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <button className="text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => { e.stopPropagation(); }}>
@@ -170,6 +187,55 @@ export const IncidentTable: React.FC<IncidentTableProps> = ({
                     </div>
                 )}
             </div>
+
+            {/* Pagination Controls */}
+            {!isLoading && incidents.length > 0 && (
+                <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                    <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                        <div>
+                            <p className="text-sm text-gray-700">
+                                Showing <span className="font-medium">{startIndex + 1}</span> to <span className="font-medium">{Math.min(startIndex + itemsPerPage, incidents.length)}</span> of <span className="font-medium">{incidents.length}</span> results
+                            </p>
+                        </div>
+                        <div>
+                            <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                <button
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                    className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                >
+                                    <span className="sr-only">Previous</span>
+                                    <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                                    </svg>
+                                </button>
+                                {/* Page Numbers (Simplified for now - can accept loop if needed but simple next/prev is safer for quick edit) */}
+                                {[...Array(Math.min(5, totalPages))].map((_, i) => {
+                                    // Simple logic to show first 5 pages or sliding window could be complex. 
+                                    // Let's stick to simple Prev/Next and maybe current page display if many pages.
+                                    // For now, let's just render the current page button and maybe neighbors. 
+                                    // Actually, let's keep it simple: Prev, [Current of Total], Next
+                                    return null;
+                                })}
+                                <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                                    Page {currentPage} of {totalPages}
+                                </span>
+
+                                <button
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                    className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                >
+                                    <span className="sr-only">Next</span>
+                                    <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                                    </svg>
+                                </button>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

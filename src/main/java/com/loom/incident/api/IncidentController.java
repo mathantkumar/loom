@@ -7,9 +7,9 @@ import com.loom.incident.service.IncidentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/incidents")
@@ -31,7 +31,7 @@ public class IncidentController {
     }
 
     @PostMapping
-    public ResponseEntity<Incident> createIncident(@RequestBody IncidentRequest request) {
+    public ResponseEntity<Incident> createIncident(@Valid @RequestBody IncidentRequest request) {
         Incident incident = new Incident();
         incident.setTitle(request.getTitle());
         incident.setDescription(request.getDescription());

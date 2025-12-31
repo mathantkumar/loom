@@ -12,11 +12,12 @@ import {
     HelpCircle,
     Menu,
     ChevronLeft,
-    Heart
+    Heart,
+    Sparkles
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import logo from '../assets/logo.png';
+import { SentinelLogo } from './brand/SentinelLogo';
 import { BRAND_NAME } from '../config/branding';
 
 interface SidebarProps {
@@ -34,8 +35,6 @@ export function Sidebar({ className }: SidebarProps) {
         localStorage.setItem('sidebar_collapsed', JSON.stringify(collapsed));
     }, [collapsed]);
 
-
-
     const menuItems = [
         {
             section: 'Primary Menu', items: [
@@ -46,6 +45,7 @@ export function Sidebar({ className }: SidebarProps) {
                 { icon: BookOpen, label: 'Documentation', path: '/documentation' },
                 { icon: BarChart2, label: 'Stats & History', path: '/stats' },
                 { icon: Bell, label: 'Alerts', path: '/alerts' },
+                { icon: Sparkles, label: 'Ask Sentinel', path: '/ask' },
             ]
         },
         {
@@ -68,14 +68,11 @@ export function Sidebar({ className }: SidebarProps) {
             {/* Header / Logo Area */}
             <div className="h-16 flex items-center px-4 border-b border-gray-800 justify-between">
                 {!collapsed && (
-                    <div className="flex items-center gap-2 font-bold text-lg tracking-tight">
-                        <img src={logo} alt={`${BRAND_NAME} Logo`} className="h-8 w-auto object-contain" />
-                        <span>{BRAND_NAME}</span>
-                    </div>
+                    <SentinelLogo variant="full" size="md" mode="dark" />
                 )}
                 {collapsed && (
                     <div className="mx-auto">
-                        <img src={logo} alt={BRAND_NAME} className="h-8 w-8 object-contain" />
+                        <SentinelLogo variant="symbol" size="sm" mode="dark" />
                     </div>
                 )}
 

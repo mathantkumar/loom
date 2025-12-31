@@ -3,8 +3,6 @@ package com.loom.sentinel.pulse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/sentinel/pulse")
 @CrossOrigin(origins = "${loom.cors.allowed-origins:http://localhost:5173}")

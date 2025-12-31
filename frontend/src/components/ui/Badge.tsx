@@ -18,7 +18,7 @@ export function Badge({ variant, children, className: customClass = '' }: BadgeP
             SEV2: 'bg-orange-50 text-orange-700',
             SEV3: 'bg-yellow-50 text-yellow-700',
             SEV4: 'bg-blue-50 text-blue-700',
-            OPEN: 'bg-red-50 text-red-700',
+            OPEN: 'bg-blue-50 text-blue-700',
             INVESTIGATING: 'bg-purple-50 text-purple-700',
             MITIGATED: 'bg-yellow-50 text-yellow-700',
             RESOLVED: 'bg-green-50 text-green-700',

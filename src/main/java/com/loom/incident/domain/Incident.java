@@ -76,6 +76,10 @@ public class Incident {
     @Column(name = "deployment_insight", columnDefinition = "TEXT")
     private String deploymentInsight;
 
+    @OneToMany(mappedBy = "incident", cascade = CascadeType.ALL, orphanRemoval = true)
+    @com.fasterxml.jackson.annotation.JsonIgnore // Ignore to avoid deep nesting or cycles if redundant
+    private List<com.loom.sentinel.code.IncidentCodeCorrelation> codeCorrelations = new ArrayList<>();
+
     // Default constructor
     public Incident() {
     }
@@ -240,5 +244,46 @@ public class Incident {
 
     public void setDeploymentInsight(String deploymentInsight) {
         this.deploymentInsight = deploymentInsight;
+    }
+
+    public List<com.loom.sentinel.code.IncidentCodeCorrelation> getCodeCorrelations() {
+        return codeCorrelations;
+    }
+
+    public void setCodeCorrelations(List<com.loom.sentinel.code.IncidentCodeCorrelation> codeCorrelations) {
+        this.codeCorrelations = codeCorrelations;
+    }
+
+    @Column(name = "recurring")
+    private Boolean recurring = false;
+
+    @Column(name = "recurring_count")
+    private Integer recurringCount = 0;
+
+    @Column(name = "first_seen")
+    private Instant firstSeen;
+
+    public Boolean isRecurring() {
+        return recurring;
+    }
+
+    public void setRecurring(Boolean recurring) {
+        this.recurring = recurring;
+    }
+
+    public Integer getRecurringCount() {
+        return recurringCount;
+    }
+
+    public void setRecurringCount(Integer recurringCount) {
+        this.recurringCount = recurringCount;
+    }
+
+    public Instant getFirstSeen() {
+        return firstSeen;
+    }
+
+    public void setFirstSeen(Instant firstSeen) {
+        this.firstSeen = firstSeen;
     }
 }

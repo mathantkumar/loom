@@ -4,12 +4,24 @@ import com.loom.incident.domain.IncidentStatus;
 import com.loom.incident.domain.IssueType;
 import com.loom.incident.domain.Severity;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 public class IncidentRequest {
+    @NotBlank(message = "Title is required")
     private String title;
+
     private String description;
+
+    @NotNull(message = "Severity is required")
     private Severity severity;
+
+    @NotNull(message = "Status is required")
     private IncidentStatus status;
+
+    @NotBlank(message = "Service name is required")
     private String service;
+
     private IssueType issueType;
 
     // Getters and Setters

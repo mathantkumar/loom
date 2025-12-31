@@ -1,0 +1,57 @@
+version: '3.8'
+services:
+  backend:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      # Allow frontend to connect
+      - SPRING_PROFILES_ACTIVE=prod
+      # Allow frontend to connect
+      - LOOM_CORS_ALLOWED-ORIGINS=*
+      - ELASTICSEARCH_URIS=http://elasticsearch:9200
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/loom
+      - SPRING_DATASOURCE_USERNAME=loom
+      - SPRING_DATASOURCE_PASSWORD=password
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      - elasticsearch
+      - db
+
+  frontend:
+    image: node:18-alpine
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    # Install dependencies and start Vite in host mode
+    command: sh -c "npm install && npm run dev -- --host"
+    ports:
+      - "5173:5173"
+    environment:
+      # Point to backend service
+      - VITE_API_URL=http://localhost:8080/api
+    depends_on:
+      - backend
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.4
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=loom
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=loom
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

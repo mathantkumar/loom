@@ -12,6 +12,7 @@ import { TeamsPage } from './pages/TeamsPage';
 import { ReportIncidentPage } from './pages/ReportIncidentPage';
 import { HelpPage } from './pages/HelpPage';
 import PulsePage from './pages/PulsePage';
+import { AskSentinelPage } from './pages/AskSentinelPage';
 
 function App() {
   return (
@@ -31,7 +32,9 @@ function App() {
           <Route path="/analysis" element={<AnalysisPage />} />
           <Route path="/documentation" element={<DocumentationPage />} />
           <Route path="/stats" element={<StatsPage />} />
+          <Route path="/stats" element={<StatsPage />} />
           <Route path="/alerts" element={<AlertsPage />} />
+          <Route path="/ask" element={<AskSentinelPage />} />
 
           <Route path="/teams" element={<TeamsPage />} />
           <Route path="/report" element={<ReportIncidentPage />} />

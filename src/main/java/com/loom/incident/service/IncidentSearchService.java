@@ -5,6 +5,7 @@ import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.json.JsonData;
+import com.loom.incident.config.ElasticsearchIndexConstants;
 
 import com.loom.incident.api.dto.IncidentStatsResponse;
 import com.loom.incident.api.dto.SimilarIncidentResponse;
@@ -28,7 +29,6 @@ import java.util.UUID;
 public class IncidentSearchService {
 
     private static final Logger logger = LoggerFactory.getLogger(IncidentSearchService.class);
-    private static final String INDEX_NAME = "incident_index";
 
     private final ElasticsearchClient elasticsearchClient;
 
@@ -36,14 +36,15 @@ public class IncidentSearchService {
         this.elasticsearchClient = elasticsearchClient;
     }
 
+    public record ScoredIncident(Incident incident, double score) {
+    }
+
     public List<SimilarIncidentResponse> findSimilarIncidents(UUID incidentId) {
         List<SimilarIncidentResponse> similarIncidents = new ArrayList<>();
         try {
             // 1. Fetch the source incident document to get its embedding
-            // We use generic Map<String, Object> or generic GetRequest because we just need
-            // the embedding field.
             SearchResponse<Map> sourceResponse = elasticsearchClient.search(s -> s
-                    .index(INDEX_NAME)
+                    .index(ElasticsearchIndexConstants.INCIDENT_INDEX)
                     .query(q -> q.ids(i -> i.values(incidentId.toString())))
                     .size(1), Map.class);
 
@@ -58,8 +59,6 @@ public class IncidentSearchService {
                 return similarIncidents;
             }
 
-            // Extract embedding as List<Double> (JSON deserialization typically makes it a
-            // List)
             Object embeddingObj = sourceSource.get("embedding");
             List<Double> embeddingList;
             if (embeddingObj instanceof List) {
@@ -69,14 +68,6 @@ public class IncidentSearchService {
                 return similarIncidents;
             }
 
-            // Convert List<Double> to float[] required by newer ES clients or List<Float>
-            // depending on exact version method signature.
-            // But the Java client for dense_vector often takes List<Float> or just queries.
-            // Actually, for kNN query in Java client, we often pass it as a field in a
-            // builder.
-            // Let's assume generic loose typing or standard Float arrays.
-            // In modern Java Client 8.x: knn query accepts queryVector as List<Float>.
-
             List<Float> queryVector = new ArrayList<>();
             for (Number num : embeddingList) {
                 queryVector.add(num.floatValue());
@@ -84,7 +75,7 @@ public class IncidentSearchService {
 
             // 2. Execute kNN search
             SearchResponse<Map> searchResponse = elasticsearchClient.search(s -> s
-                    .index(INDEX_NAME)
+                    .index(ElasticsearchIndexConstants.INCIDENT_INDEX)
                     .knn(k -> k
                             .field("embedding")
                             .queryVector(queryVector)
@@ -121,8 +112,40 @@ public class IncidentSearchService {
         } catch (Exception e) {
             logger.error("Unexpected error in similarity search", e);
         }
-
         return similarIncidents;
+    }
+
+    public List<ScoredIncident> findByVector(List<Double> embedding, int limit) {
+        List<ScoredIncident> results = new ArrayList<>();
+        try {
+            List<Float> queryVector = new ArrayList<>();
+            for (Number num : embedding) {
+                queryVector.add(num.floatValue());
+            }
+
+            SearchResponse<Map> searchResponse = elasticsearchClient.search(s -> s
+                    .index(ElasticsearchIndexConstants.INCIDENT_INDEX)
+                    .knn(k -> k
+                            .field("embedding")
+                            .queryVector(queryVector)
+                            .k(limit)
+                            .numCandidates(50)
+                            .filter(f -> f
+                                    .term(t -> t.field("status").value(IncidentStatus.RESOLVED.name())))),
+                    Map.class);
+
+            for (Hit<Map> hit : searchResponse.hits().hits()) {
+                Double score = hit.score();
+                Map<String, Object> source = hit.source();
+
+                if (source != null && score != null) {
+                    results.add(new ScoredIncident(mapSourceToIncident(source), score));
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Error searching by vector", e);
+        }
+        return results;
     }
 
     public List<Incident> searchIncidents(String queryText, Severity severity, String status,
@@ -130,7 +153,7 @@ public class IncidentSearchService {
         List<Incident> results = new ArrayList<>();
         try {
             SearchResponse<Map> response = elasticsearchClient.search(s -> s
-                    .index(INDEX_NAME)
+                    .index(ElasticsearchIndexConstants.INCIDENT_INDEX)
                     .query(q -> {
                         BoolQuery.Builder bool = new BoolQuery.Builder();
 
@@ -145,23 +168,23 @@ public class IncidentSearchService {
                             bool.must(m -> m.matchAll(ma -> ma));
                         }
 
-                        // 2. Filters - Use .keyword for exact filtering on string/enum fields
+                        // 2. Filters - Use fields directly as they are mapped as keywords
                         if (severity != null) {
-                            bool.filter(f -> f.term(t -> t.field("severity.keyword").value(severity.name())));
+                            bool.filter(f -> f.term(t -> t.field("severity").value(severity.name())));
                         }
 
                         // Status Filter Logic
                         if (status == null) {
                             // Default to OPEN if unset
-                            bool.filter(f -> f.term(t -> t.field("status.keyword").value(IncidentStatus.OPEN.name())));
+                            bool.filter(f -> f.term(t -> t.field("status").value(IncidentStatus.OPEN.name())));
                         } else if (!"ALL".equalsIgnoreCase(status)) {
                             // Filter by specific status if provided and NOT "ALL"
-                            bool.filter(f -> f.term(t -> t.field("status.keyword").value(status)));
+                            bool.filter(f -> f.term(t -> t.field("status").value(status)));
                         }
                         // If "ALL", apply no status filter (show all)
 
                         if (issueType != null) {
-                            bool.filter(f -> f.term(t -> t.field("issueType.keyword").value(issueType.name())));
+                            bool.filter(f -> f.term(t -> t.field("issueType").value(issueType.name())));
                         }
                         if (fromDate != null || toDate != null) {
                             bool.filter(f -> f.range(r -> {
@@ -180,7 +203,7 @@ public class IncidentSearchService {
                     })
                     .sort(so -> so.field(
                             f -> f.field("created_at").order(co.elastic.clients.elasticsearch._types.SortOrder.Desc)))
-                    .size(50),
+                    .size(1000),
                     Map.class);
 
             for (Hit<Map> hit : response.hits().hits()) {
@@ -199,15 +222,14 @@ public class IncidentSearchService {
 
     public IncidentStatsResponse getIncidentStats() {
         try {
-            // Use .keyword for aggregations to avoid "Fielddata is disabled on text fields"
-            // error
+            // Use fields directly since they are mapped as keywords
             SearchResponse<Void> response = elasticsearchClient.search(s -> s
-                    .index(INDEX_NAME)
+                    .index(ElasticsearchIndexConstants.INCIDENT_INDEX)
                     .size(0) // We only care about aggregations
                     .aggregations("severity_counts", a -> a
-                            .terms(t -> t.field("severity.keyword")))
+                            .terms(t -> t.field("severity")))
                     .aggregations("status_counts", a -> a
-                            .terms(t -> t.field("status.keyword"))),
+                            .terms(t -> t.field("status"))),
                     Void.class);
 
             Map<Severity, Long> severityMap = new HashMap<>();

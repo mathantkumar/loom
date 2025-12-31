@@ -15,6 +15,7 @@ export interface IncidentRequest {
 
 export interface Incident {
     id: string;
+    publicId?: string;
     title: string;
     description: string;
     severity: Severity;

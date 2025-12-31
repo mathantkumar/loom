@@ -51,7 +51,7 @@ export const IncidentDetailPanel: React.FC<IncidentDetailPanelProps> = ({ incide
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-start bg-gray-50">
                 <div>
                     <div className="flex items-center gap-3 mb-1">
-                        <span className="text-xs font-mono text-gray-500">#{incident.id.split('-')[0]}</span>
+                        <span className="text-xs font-mono text-gray-500">#{incident.id}</span>
                         <Badge variant={incident.severity}>{incident.severity}</Badge>
                         <Badge variant={incident.status === 'PENDING_CONFIRMATION' ? 'outline' : incident.status} className={incident.status === 'OPEN' ? 'bg-orange-100 text-orange-800' : ''}>{incident.status}</Badge>
                     </div>

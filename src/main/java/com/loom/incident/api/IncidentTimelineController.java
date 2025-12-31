@@ -15,14 +15,18 @@ import java.util.UUID;
 public class IncidentTimelineController {
 
     private final IncidentTimelineService incidentTimelineService;
+    private final com.loom.incident.service.IncidentService incidentService;
 
-    public IncidentTimelineController(IncidentTimelineService incidentTimelineService) {
+    public IncidentTimelineController(IncidentTimelineService incidentTimelineService,
+            com.loom.incident.service.IncidentService incidentService) {
         this.incidentTimelineService = incidentTimelineService;
+        this.incidentService = incidentService;
     }
 
     @GetMapping("/{id}/timeline")
-    public ResponseEntity<IncidentTimelineResponse> getIncidentTimeline(@PathVariable UUID id) {
-        IncidentTimelineResponse response = incidentTimelineService.buildTimeline(id);
+    public ResponseEntity<IncidentTimelineResponse> getIncidentTimeline(@PathVariable String id) {
+        com.loom.incident.domain.Incident incident = incidentService.getIncidentById(id);
+        IncidentTimelineResponse response = incidentTimelineService.buildTimeline(incident.getId());
         return ResponseEntity.ok(response);
     }
 }

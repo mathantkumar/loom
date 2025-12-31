@@ -24,13 +24,13 @@ public class IncidentPatternService {
 
     private final ElasticsearchClient elasticsearchClient;
     private final IncidentService incidentService;
-    private final EmbeddingService embeddingService;
+    private final com.loom.incident.ai.EmbeddingClient embeddingClient;
 
     public IncidentPatternService(ElasticsearchClient elasticsearchClient, IncidentService incidentService,
-            EmbeddingService embeddingService) {
+            com.loom.incident.ai.EmbeddingClient embeddingClient) {
         this.elasticsearchClient = elasticsearchClient;
         this.incidentService = incidentService;
-        this.embeddingService = embeddingService;
+        this.embeddingClient = embeddingClient;
     }
 
     public IncidentPatternResponse detectPattern(UUID incidentId) {
@@ -40,7 +40,11 @@ public class IncidentPatternService {
             // Get embedding - ideally cached or stored, but generating for now ensures
             // freshness if not yet indexed
             String textContent = currentIncident.getTitle() + " " + currentIncident.getDescription();
-            float[] embedding = embeddingService.generateEmbedding(textContent);
+            java.util.List<Double> embeddingList = embeddingClient.getEmbedding(textContent);
+            float[] embedding = new float[embeddingList.size()];
+            for (int i = 0; i < embeddingList.size(); i++) {
+                embedding[i] = embeddingList.get(i).floatValue();
+            }
 
             // Time range: last 30 days
             String timeRange = "now-30d";

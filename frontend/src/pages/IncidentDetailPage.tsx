@@ -10,6 +10,8 @@ import { DecisionLog } from '../components/incident/DecisionLog';
 import { NextActions } from '../components/incident/NextActions';
 import { TimelinePanel } from '../components/TimelinePanel';
 import { AIActions } from '../components/AIActions';
+import { CodeIntelligencePanel } from '../components/CodeIntelligencePanel';
+import { SentinelDiagnosisPanel } from '../components/incident/SentinelDiagnosisPanel';
 
 const IncidentDetailPage = () => {
     const { id } = useParams<{ id: string }>();
@@ -119,6 +121,11 @@ const IncidentDetailPage = () => {
                     {/* LEFT COLUMN (Main Narrative) */}
                     <div className="lg:col-span-8 space-y-12">
 
+                        {/* Sentinel Diagnosis - NEW SECTION */}
+                        <div className="animate-in slide-in-from-bottom-2 duration-500 delay-50">
+                            <SentinelDiagnosisPanel incidentId={incident.id} />
+                        </div>
+
                         {/* 2. Next Actions (Critical Path) */}
                         <div className="animate-in slide-in-from-bottom-2 duration-500 delay-100">
                             <NextActions actions={analysis?.suggestedActions} />
@@ -127,6 +134,11 @@ const IncidentDetailPage = () => {
                         {/* 3. System Observations (Evidence) */}
                         <div className="animate-in slide-in-from-bottom-2 duration-500 delay-200">
                             <SystemObservations incidentId={incident.id} evidence={incident.evidence} />
+                        </div>
+
+                        {/* Code Intelligence */}
+                        <div className="animate-in slide-in-from-bottom-2 duration-500 delay-250">
+                            <CodeIntelligencePanel incidentId={incident.id} />
                         </div>
 
                         {/* 4. Decision Log (Forensic Notebook) */}

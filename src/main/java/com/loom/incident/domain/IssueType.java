@@ -7,5 +7,6 @@ public enum IssueType {
     PERFORMANCE,
     NETWORK,
     SECURITY,
-    INFRASTRUCTURE
+    INFRASTRUCTURE,
+    PROCESS_FAILURE
 }

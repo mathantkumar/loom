@@ -16,7 +16,7 @@ export const IncidentHeader: React.FC<IncidentHeaderProps> = ({ incident, onStat
             {/* Top Meta Row */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 <div className="flex items-center gap-3">
-                    <span className="font-mono text-sm text-slate-400">#{incident.id.slice(0, 8)}</span>
+                    <span className="font-mono text-sm text-slate-400">{incident.id}</span>
                     <SeverityBadge severity={incident.severity} />
                     <StatusSelect currentStatus={incident.status} onStatusChange={onStatusChange} />
 
