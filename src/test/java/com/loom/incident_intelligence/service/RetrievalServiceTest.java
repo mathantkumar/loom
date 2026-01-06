@@ -1,55 +1,69 @@
 package com.loom.incident_intelligence.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.search.Hit;
+import co.elastic.clients.elasticsearch.core.search.HitsMetadata;
 import com.loom.incident_intelligence.model.ChunkMetadata;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 
+import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class RetrievalServiceTest {
 
     @Test
-    void testRetrieve() {
+    void testSearch() throws IOException {
+        // Arrange
         EmbeddingService embeddingService = mock(EmbeddingService.class);
-        ObjectMapper objectMapper = new ObjectMapper();
+        ElasticsearchClient elasticsearchClient = mock(ElasticsearchClient.class);
+        
+        RetrievalService service = new RetrievalService(embeddingService, elasticsearchClient);
 
-        RetrievalService service = new RetrievalService(embeddingService, objectMapper);
+        // Mock Embedding
+        float[] mockVector = new float[768];
+        mockVector[0] = 1.0f;
+        when(embeddingService.embed(any(String.class))).thenReturn(mockVector);
 
-        ReflectionTestUtils.setField(service, "indexPath", "./target/test-index");
-        ReflectionTestUtils.setField(service, "metadataPath", "./target/test-metadata.json");
-        ReflectionTestUtils.setField(service, "defaultTopK", 2);
+        // Mock Elasticsearch Response
+        SearchResponse<Map> mockResponse = mock(SearchResponse.class);
+        HitsMetadata<Map> webParamsHits = mock(HitsMetadata.class);
+        
+        Map<String, Object> source = Map.of(
+            "incident_id", "123",
+            "title", "DB Failure",
+            "description", "Database connection lost",
+            "service", "db-service"
+        );
+        
+        Hit<Map> hit = Hit.of(h -> h
+            .index("incident_index")
+            .id("123")
+            .score(0.95)
+            .source(source));
+            
+        when(webParamsHits.hits()).thenReturn(List.of(hit));
+        when(mockResponse.hits()).thenReturn(webParamsHits);
+        
+        when(elasticsearchClient.search(ArgumentMatchers.<SearchRequest>any(), ArgumentMatchers.<Class<Map>>any()))
+            .thenReturn(mockResponse);
 
-        service.init();
+        // Act
+        List<ChunkMetadata> results = service.search("database down", 5);
 
-        float[] v1 = new float[768];
-        v1[0] = 1.0f;
-        float[] v2 = new float[768];
-        v2[0] = 0.0f; // orthogonal
-        float[] v3 = new float[768];
-        v3[0] = 0.9f; // close to v1
-        for (int i = 1; i < 768; i++)
-            v3[i] = 0.001f; // Ensure it's not identical but close
-
-        ChunkMetadata m1 = ChunkMetadata.builder().id("1").title("T1").build();
-        ChunkMetadata m2 = ChunkMetadata.builder().id("2").title("T2").build();
-        ChunkMetadata m3 = ChunkMetadata.builder().id("3").title("T3").build();
-
-        service.addChunk(m1, v1);
-        service.addChunk(m2, v2);
-        service.addChunk(m3, v3);
-
-        // Query close to v1
-        float[] q = new float[768];
-        q[0] = 0.95f;
-        List<ChunkMetadata> results = service.retrieve(q);
-
-        Assertions.assertEquals(2, results.size());
-        // Since order depends on distance, and v1 and v3 are closest.
-        Assertions.assertTrue(results.stream().anyMatch(r -> r.getId().equals("1")));
-        Assertions.assertTrue(results.stream().anyMatch(r -> r.getId().equals("3")));
+        // Assert
+        Assertions.assertEquals(1, results.size());
+        Assertions.assertEquals("123", results.get(0).getId());
+        Assertions.assertTrue(results.get(0).getText().contains("DB Failure"));
     }
 }

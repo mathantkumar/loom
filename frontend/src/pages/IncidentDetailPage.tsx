@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { api } from '../api/client';
-import type { Incident, AnalysisResponse, IncidentStatus } from '../types';
+import type { Incident, AnalysisResponse, TrendAnalysisResponse, IncidentStatus } from '../types';
 import { IncidentHeader } from '../components/incident/IncidentHeader';
 import { SystemObservations } from '../components/incident/SystemObservations';
 import { AIInsightPanel } from '../components/incident/AIInsightPanel';
@@ -12,11 +12,14 @@ import { TimelinePanel } from '../components/TimelinePanel';
 import { AIActions } from '../components/AIActions';
 import { CodeIntelligencePanel } from '../components/CodeIntelligencePanel';
 import { SentinelDiagnosisPanel } from '../components/incident/SentinelDiagnosisPanel';
+import { AnalysisModal } from '../components/incident/AnalysisModal';
+import { TrendsModal } from '../components/incident/TrendsModal';
 
 const IncidentDetailPage = () => {
     const { id } = useParams<{ id: string }>();
     const [incident, setIncident] = useState<Incident | null>(null);
     const [analysis, setAnalysis] = useState<AnalysisResponse | null>(null);
+    const [trends, setTrends] = useState<TrendAnalysisResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -24,6 +27,10 @@ const IncidentDetailPage = () => {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [isCheckingTrends, setIsCheckingTrends] = useState(false);
     const [isSendingEmail, setIsSendingEmail] = useState(false);
+
+    // Modal State
+    const [showAnalysisModal, setShowAnalysisModal] = useState(false);
+    const [showTrendsModal, setShowTrendsModal] = useState(false);
 
     useEffect(() => {
         if (id) {
@@ -64,6 +71,7 @@ const IncidentDetailPage = () => {
     const handleWhatHappened = async () => {
         if (!incident) return;
         setIsAnalyzing(true);
+        setShowAnalysisModal(true); // Open modal immediately, it will show loading
         try {
             const result = await api.analyzeIncident(incident.id);
             setAnalysis(result);
@@ -75,9 +83,17 @@ const IncidentDetailPage = () => {
     };
 
     const handleCheckTrends = async () => {
+        if (!incident) return;
         setIsCheckingTrends(true);
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        setIsCheckingTrends(false);
+        setShowTrendsModal(true);
+        try {
+            const result = await api.analyzeTrends(incident.id);
+            setTrends(result);
+        } catch (error) {
+            console.error("Trend analysis failed", error);
+        } finally {
+            setIsCheckingTrends(false);
+        }
     };
 
     const handleSendEmail = async () => {
@@ -128,7 +144,7 @@ const IncidentDetailPage = () => {
 
                         {/* 2. Next Actions (Critical Path) */}
                         <div className="animate-in slide-in-from-bottom-2 duration-500 delay-100">
-                            <NextActions actions={analysis?.suggestedActions} />
+                            <NextActions actions={analysis?.suggestedActions} incidentId={incident.id} />
                         </div>
 
                         {/* 3. System Observations (Evidence) */}
@@ -181,6 +197,22 @@ const IncidentDetailPage = () => {
 
                 </div>
             </div>
+
+            {/* Analysis Modal */}
+            <AnalysisModal
+                isOpen={showAnalysisModal}
+                onClose={() => setShowAnalysisModal(false)}
+                analysis={analysis}
+                isLoading={isAnalyzing}
+            />
+
+            {/* Trends Modal */}
+            <TrendsModal
+                isOpen={showTrendsModal}
+                onClose={() => setShowTrendsModal(false)}
+                trends={trends}
+                isLoading={isCheckingTrends}
+            />
         </div>
     );
 };

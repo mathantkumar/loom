@@ -6,6 +6,8 @@ import { IncidentFilters } from '../components/IncidentFilters';
 import { DashboardStats } from '../components/DashboardStats';
 import { IncidentTable } from '../components/IncidentTable';
 import { CreateIncidentModal } from '../components/CreateIncidentModal';
+import { PageHeader } from '../components/brand/PageHeader';
+import { Button } from '../components/brand/Button';
 
 export const IncidentListPage: React.FC = () => {
     const navigate = useNavigate();
@@ -62,44 +64,41 @@ export const IncidentListPage: React.FC = () => {
             <div className="max-w-[1400px] mx-auto px-6 py-8 space-y-8">
 
                 {/* Header */}
-                <div className="flex justify-between items-center">
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Dashboard</h1>
-                        <p className="mt-2 text-base text-gray-500">
-                            Monitor, track, and resolve incidents across all services.
-                        </p>
-                    </div>
-                    <div className="flex gap-3">
-                        <button
-                            onClick={async () => {
-                                setLoading(true);
-                                try {
-                                    await api.syncIndex();
-                                    // Reload page or re-fetch
-                                    window.location.reload();
-                                } catch (e) {
-                                    console.error(e);
-                                    setLoading(false);
-                                }
-                            }}
-                            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
-                        >
-                            <svg className="-ml-1 mr-2 h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                            Sync Data
-                        </button>
-                        <button
-                            onClick={() => setIsCreateModalOpen(true)}
-                            className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-                        >
-                            <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-                            </svg>
-                            Create Incident
-                        </button>
-                    </div>
-                </div>
+                <PageHeader
+                    title="Dashboard"
+                    description="Monitor, track, and resolve incidents across all services."
+                    actions={
+                        <>
+                            <Button
+                                variant="secondary"
+                                onClick={async () => {
+                                    setLoading(true);
+                                    try {
+                                        await api.syncIndex();
+                                        window.location.reload();
+                                    } catch (e) {
+                                        console.error(e);
+                                        setLoading(false);
+                                    }
+                                }}
+                            >
+                                <svg className="-ml-1 mr-2 h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                Sync Data
+                            </Button>
+                            <Button
+                                variant="primary"
+                                onClick={() => setIsCreateModalOpen(true)}
+                            >
+                                <svg className="-ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                                </svg>
+                                Create Incident
+                            </Button>
+                        </>
+                    }
+                />
 
                 {/* KPI Cards */}
                 <DashboardStats

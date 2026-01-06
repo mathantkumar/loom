@@ -3,6 +3,22 @@ import { motion } from 'framer-motion';
 import { MockAiInteraction } from './MockAiInteraction';
 import { Link } from 'react-router-dom';
 
+const COMPANIES = [
+    { name: "Microsoft", domain: "microsoft.com" },
+    { name: "Google", domain: "google.com" },
+    { name: "Meta", domain: "meta.com" },
+    { name: "Nielsen", domain: "nielsen.com" },
+    { name: "Zuora", domain: "zuora.com" },
+    { name: "Accenture", domain: "accenture.com" },
+    { name: "Arup", domain: "arup.com" },
+    { name: "Morgan Stanley", domain: "morganstanley.com" },
+    { name: "Paypal", domain: "paypal.com" },
+    { name: "Adobe", domain: "adobe.com" },
+    { name: "Cleartrip", domain: "cleartrip.com" },
+    { name: "PwC", domain: "pwc.com" },
+    { name: "Freshworks", domain: "freshworks.com" },
+];
+
 export const HeroSection: React.FC = () => {
     return (
         <section className="relative w-full min-h-screen flex items-center justify-center bg-white overflow-hidden pt-20 pb-20">
@@ -24,12 +40,12 @@ export const HeroSection: React.FC = () => {
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
                             </span>
-                            Sentinel 2.0 is live
+                            Sentinel is live
                         </div>
-                        <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-gray-900 leading-[1.1] mb-6">
-                            Engineering Intelligence. <br />
+                        <h1 className="text-5xl lg:text-7xl font-display font-bold tracking-tight text-gray-900 leading-[1.1] mb-6">
+                            Intelligence. <br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">
-                                Before Escalatation.
+                                that Delivers.
                             </span>
                         </h1>
                         <p className="text-xl text-gray-500 leading-relaxed max-w-xl mx-auto lg:mx-0">
@@ -62,12 +78,46 @@ export const HeroSection: React.FC = () => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 1, delay: 0.5 }}
-                        className="pt-8 flex items-center gap-8 justify-center lg:justify-start grayscale opacity-60"
+                        className="pt-8 flex items-center justify-center lg:justify-start w-full max-w-2xl lg:max-w-none mx-auto lg:mx-0"
                     >
-                        {/* Trust Badges (Abstracted) */}
-                        <div className="h-8 w-24 bg-gray-200 rounded animate-pulse" />
-                        <div className="h-8 w-24 bg-gray-200 rounded animate-pulse delay-75" />
-                        <div className="h-8 w-24 bg-gray-200 rounded animate-pulse delay-150" />
+                        {/* Trust Badges Marquee */}
+                        <div className="w-full overflow-hidden relative h-14 flex">
+                            {/* Track 1 */}
+                            <motion.div
+                                animate={{ x: "-100%" }}
+                                transition={{ repeat: Infinity, ease: "linear", duration: 60 }}
+                                className="flex gap-16 items-center flex-shrink-0 pr-16"
+                            >
+                                {COMPANIES.map((company, i) => (
+                                    <div key={i} className="flex items-center gap-3">
+                                        <img
+                                            src={`https://www.google.com/s2/favicons?domain=${company.domain}&sz=128`}
+                                            alt={company.name}
+                                            className="h-8 w-8 object-contain"
+                                        />
+                                        <span className="text-lg font-bold text-gray-400 whitespace-nowrap">{company.name}</span>
+                                    </div>
+                                ))}
+                            </motion.div>
+
+                            {/* Track 2 */}
+                            <motion.div
+                                animate={{ x: "-100%" }}
+                                transition={{ repeat: Infinity, ease: "linear", duration: 60 }}
+                                className="flex gap-16 items-center flex-shrink-0 pr-16"
+                            >
+                                {COMPANIES.map((company, i) => (
+                                    <div key={i} className="flex items-center gap-3">
+                                        <img
+                                            src={`https://www.google.com/s2/favicons?domain=${company.domain}&sz=128`}
+                                            alt={company.name}
+                                            className="h-8 w-8 object-contain"
+                                        />
+                                        <span className="text-lg font-bold text-gray-400 whitespace-nowrap">{company.name}</span>
+                                    </div>
+                                ))}
+                            </motion.div>
+                        </div>
                     </motion.div>
                 </div>
 
@@ -75,7 +125,7 @@ export const HeroSection: React.FC = () => {
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95, x: 20 }}
                     animate={{ opacity: 1, scale: 1, x: 0 }}
-                    transition={{ duration: 0.8, delay: 0.3 }}
+                    transition={{ duration: 0.8, delay: 0.1 }}
                     className="relative"
                 >
                     <div className="absolute -inset-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-3xl opacity-20 blur-2xl -z-10" />

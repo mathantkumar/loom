@@ -1,92 +1,74 @@
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { DocLayout } from '../components/docs/DocLayout';
-import { DOCS } from '../components/docs/docData';
+// Minimal design for DocumentationPage
+import { Book, FileText, Code } from 'lucide-react';
 
 export const DocumentationPage = () => {
-    const [searchParams, setSearchParams] = useSearchParams();
-    const sectionParam = searchParams.get('section');
-
-    // Default to first section if none specified or invalid
-    const initialSectionId = sectionParam && DOCS.find(d => d.id === sectionParam)
-        ? sectionParam
-        : DOCS[0].id;
-
-    const [activeSectionId, setActiveSectionId] = useState(initialSectionId);
-
-    // Update URL when section changes
-    const handleSectionChange = (id: string) => {
-        setActiveSectionId(id);
-        setSearchParams({ section: id });
-    };
-
-    // Sync state if URL changes externally (e.g. back button)
-    useEffect(() => {
-        if (sectionParam && sectionParam !== activeSectionId) {
-            const exists = DOCS.find(d => d.id === sectionParam);
-            if (exists) setActiveSectionId(sectionParam);
-        }
-    }, [sectionParam, activeSectionId]);
-
-    const activeDoc = DOCS.find(doc => doc.id === activeSectionId) || DOCS[0];
-
     return (
-        <DocLayout activeSectionId={activeSectionId} onSectionChange={handleSectionChange}>
-            <div className="animate-in fade-in duration-300 slide-in-from-bottom-4">
-                {/* Breadcrumbs */}
-                <div className="flex items-center gap-2 text-sm text-gray-500 mb-6 font-medium">
-                    <span>Docs</span>
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                    <span>{activeDoc.category}</span>
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                    <span className="text-blue-600">{activeDoc.title}</span>
+        <div className="p-8 max-w-7xl mx-auto space-y-8 bg-gray-50 min-h-screen">
+            <div>
+                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Documentation</h1>
+                <p className="text-gray-500 mt-2">Guides, references, and examples for Sentinel.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="md:col-span-2 space-y-6">
+                    <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm">
+                        <h2 className="text-xl font-bold text-gray-900 mb-4">Getting Started</h2>
+                        <p className="text-gray-500 mb-6 leading-relaxed">
+                            Learn how to integrate Sentinel into your existing infrastructure. We support all major cloud providers and container orchestration platforms.
+                        </p>
+                        <ul className="space-y-3">
+                            {[
+                                "Installation Guide",
+                                "Configuration Reference",
+                                "API Authentication",
+                                "Deploying your first Agent"
+                            ].map((item, i) => (
+                                <li key={i} className="flex items-center gap-3 text-gray-600 hover:text-indigo-600 cursor-pointer transition-colors group">
+                                    <FileText size={18} className="text-gray-400 group-hover:text-indigo-600" />
+                                    {item}
+                                </li>
+                            ))}
+
+                        </ul>
+                    </div>
+
+                    <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm">
+                        <h2 className="text-xl font-bold text-gray-900 mb-4">API Reference</h2>
+                        <div className="bg-gray-900 rounded-lg p-4 font-mono text-sm text-gray-300 overflow-x-auto">
+                            <span className="text-purple-400">curl</span> -X POST https://api.sentinel.ai/v1/incidents \<br />
+                            &nbsp;&nbsp;-H <span className="text-green-400">"Authorization: Bearer TOKEN"</span> \<br />
+                            &nbsp;&nbsp;-d <span className="text-yellow-300">'&#123;"title": "Database Outage"&#125;'</span>
+                        </div>
+                    </div>
                 </div>
 
-                {/* Content */}
-                <div className="prose prose-slate max-w-none prose-headings:font-bold prose-h1:text-4xl prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-4 prose-p:leading-relaxed prose-a:text-blue-600 hover:prose-a:text-blue-800 prose-code:text-blue-600 prose-code:bg-blue-50 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none">
-                    {activeDoc.content}
-                </div>
+                <div className="space-y-6">
+                    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <Book size={18} />
+                            Topics
+                        </h3>
+                        <ul className="space-y-2 text-sm text-gray-600">
+                            <li className="hover:text-indigo-600 cursor-pointer py-1">Core Concepts</li>
+                            <li className="hover:text-indigo-600 cursor-pointer py-1">Architecture</li>
+                            <li className="hover:text-indigo-600 cursor-pointer py-1">Security Model</li>
+                            <li className="hover:text-indigo-600 cursor-pointer py-1">Webhooks</li>
+                            <li className="hover:text-indigo-600 cursor-pointer py-1">Client Libraries</li>
+                        </ul>
+                    </div>
 
-                {/* Footer Navigation (Next/Prev) */}
-                <div className="mt-16 pt-8 border-t border-gray-200 flex justify-between">
-                    {(() => {
-                        const index = DOCS.findIndex(d => d.id === activeDoc.id);
-                        const prev = DOCS[index - 1];
-                        const next = DOCS[index + 1];
-                        return (
-                            <>
-                                {prev ? (
-                                    <button
-                                        onClick={() => handleSectionChange(prev.id)}
-                                        className="text-left group"
-                                    >
-                                        <div className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1">Previous</div>
-                                        <div className="text-blue-600 font-medium group-hover:underline flex items-center gap-1">
-                                            ← {prev.title}
-                                        </div>
-                                    </button>
-                                ) : <div />}
-
-                                {next ? (
-                                    <button
-                                        onClick={() => handleSectionChange(next.id)}
-                                        className="text-right group"
-                                    >
-                                        <div className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1">Next</div>
-                                        <div className="text-blue-600 font-medium group-hover:underline flex items-center gap-1">
-                                            {next.title} →
-                                        </div>
-                                    </button>
-                                ) : <div />}
-                            </>
-                        );
-                    })()}
+                    <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-6 rounded-xl text-white shadow-md">
+                        <h3 className="font-bold mb-2 flex items-center gap-2">
+                            <Code size={18} />
+                            Developer Hub
+                        </h3>
+                        <p className="text-indigo-100 text-sm mb-4">Join our developer community to build custom integrations.</p>
+                        <button className="w-full py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition-colors">
+                            Join Discord
+                        </button>
+                    </div>
                 </div>
             </div>
-        </DocLayout>
+        </div>
     );
 };

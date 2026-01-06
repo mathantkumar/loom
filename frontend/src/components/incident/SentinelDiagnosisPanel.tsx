@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Activity, Play, CheckCircle, AlertTriangle, Cpu, Terminal } from 'lucide-react';
 
 interface DiagnosisEvent {
-    type: 'STEP' | 'INSIGHT' | 'TIMELINE' | 'ERROR' | 'CONCLUSION' | 'INFO';
+    type: 'STEP' | 'INSIGHT' | 'TIMELINE' | 'ERROR' | 'CONCLUSION' | 'INFO' | 'STREAM';
     message: string;
     payload?: any;
 }
@@ -46,7 +46,22 @@ export const SentinelDiagnosisPanel = ({ incidentId }: Props) => {
 
         eventSource.onmessage = (event) => {
             const parsed = JSON.parse(event.data) as DiagnosisEvent;
-            setEvents(prev => [...prev, parsed]);
+
+            if (parsed.type === 'STREAM') {
+                setEvents(prev => {
+                    const last = prev[prev.length - 1];
+                    if (last && last.type === 'INSIGHT') {
+                        // Append to last insight
+                        const updated = { ...last, message: last.message + parsed.message };
+                        return [...prev.slice(0, -1), updated];
+                    } else {
+                        // Start new insight
+                        return [...prev, { type: 'INSIGHT', message: parsed.message }];
+                    }
+                });
+            } else {
+                setEvents(prev => [...prev, parsed]);
+            }
 
             if (parsed.type === 'CONCLUSION' || parsed.type === 'ERROR') {
                 eventSource.close();

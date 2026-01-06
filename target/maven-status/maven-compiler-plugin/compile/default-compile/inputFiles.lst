@@ -1,7 +1,11 @@
+/Users/mathan/Projects/loom/src/main/java/com/loom/incident_intelligence/service/ChatService.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/sentinel/pulse/PulseResponse.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident/api/dto/TimelineEvent.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/sentinel/pulse/Engineer.java
+/Users/mathan/Projects/loom/src/main/java/com/loom/incident_intelligence/controller/StreamingIncidentController.java
+/Users/mathan/Projects/loom/src/main/java/com/loom/incident/api/EscalationController.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident/service/BaselineDeviationService.java
+/Users/mathan/Projects/loom/src/main/java/com/loom/incident_intelligence/controller/ChatHistoryController.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident_intelligence/config/OllamaProperties.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/integration/git/search/CommitSearchRepository.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident/service/AIService.java
@@ -14,7 +18,9 @@
 /Users/mathan/Projects/loom/src/main/java/com/loom/sentinel/code/FileRiskProfileRepository.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident/api/dto/IncidentTimelineResponse.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident/service/BaselineCalculationService.java
+/Users/mathan/Projects/loom/src/main/java/com/loom/incident_intelligence/controller/TeamPulseController.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident/domain/TimelineEventType.java
+/Users/mathan/Projects/loom/src/main/java/com/loom/incident_intelligence/model/ChatMessage.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident/config/WebConfig.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/integration/git/search/CommitDocument.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident_intelligence/service/PromptBuilder.java
@@ -22,7 +28,10 @@
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident/api/HealthController.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/sentinel/code/FileRiskScoringService.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident/service/IncidentIndexService.java
+/Users/mathan/Projects/loom/src/main/java/com/loom/incident_intelligence/repository/ChatSessionRepository.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident_intelligence/service/OllamaClient.java
+/Users/mathan/Projects/loom/src/main/java/com/loom/incident/api/dto/TrendAnalysisResponse.java
+/Users/mathan/Projects/loom/src/main/java/com/loom/incident_intelligence/model/ChatSession.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/sentinel/atlas/service/ReasoningEngine.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/sentinel/atlas/model/ProjectState.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident/service/BaselineExplanationService.java
@@ -39,6 +48,7 @@
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident_intelligence/model/ChunkMetadata.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/sentinel/atlas/AtlasController.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/sentinel/code/IncidentCodeCorrelation.java
+/Users/mathan/Projects/loom/src/main/java/com/loom/incident/huddle/ai/TranscriptBuffer.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident/service/IncidentTimelineService.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident/service/IncidentPatternService.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/integration/cicd/Deployment.java
@@ -63,6 +73,7 @@
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident/api/IncidentPatternController.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident/config/ElasticsearchIndexConstants.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident_intelligence/model/QueryResponse.java
+/Users/mathan/Projects/loom/src/main/java/com/loom/incident/service/EscalationService.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident/api/GitIntegrationController.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/sentinel/ask/api/AskResponse.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident/exception/GlobalExceptionHandler.java
@@ -87,6 +98,7 @@
 /Users/mathan/Projects/loom/src/main/java/com/loom/sentinel/atlas/AtlasService.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident/domain/Evidence.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident/repository/IncidentRepository.java
+/Users/mathan/Projects/loom/src/main/java/com/loom/incident/config/PersistenceConfig.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident/api/dto/SimilarIncidentResponse.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/sentinel/ask/service/AskSentinelService.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/sentinel/atlas/model/AtlasSignal.java
@@ -98,6 +110,7 @@
 /Users/mathan/Projects/loom/src/main/java/com/loom/sentinel/log/repository/LogRepository.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/sentinel/diagnosis/service/SentinelDiagnosisService.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/sentinel/code/CodeIncidentCorrelationService.java
+/Users/mathan/Projects/loom/src/main/java/com/loom/incident/huddle/ai/HuddleAIService.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/sentinel/diagnosis/model/DiagnosisEvent.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident/service/IncidentService.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/sentinel/pulse/TeamHealth.java
@@ -108,8 +121,11 @@
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident/ai/MockAiClient.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident_intelligence/controller/IncidentQueryController.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident/api/dto/IncidentPatternResponse.java
+/Users/mathan/Projects/loom/src/main/java/com/loom/incident_intelligence/repository/ChatMessageRepository.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident/loader/SyntheticIncidentLoader.java
+/Users/mathan/Projects/loom/src/main/java/com/loom/incident/huddle/HuddleSocketHandler.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident/api/IncidentCodeIntelligenceController.java
+/Users/mathan/Projects/loom/src/main/java/com/loom/incident/huddle/HuddleWebSocketConfig.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/sentinel/pulse/SystemicSignal.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/incident/repository/BaselineProfileRepository.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/sentinel/log/model/LogAnalysisResult.java
@@ -117,3 +133,4 @@
 /Users/mathan/Projects/loom/src/main/java/com/loom/sentinel/SentinelAlertService.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/integration/git/Commit.java
 /Users/mathan/Projects/loom/src/main/java/com/loom/sentinel/log/model/LogEntry.java
+/Users/mathan/Projects/loom/src/main/java/com/loom/incident/config/DataSeeder.java

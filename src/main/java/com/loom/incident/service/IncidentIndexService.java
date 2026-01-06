@@ -116,13 +116,13 @@ public class IncidentIndexService {
                 elasticsearchClient.indices().delete(d -> d.index(INDEX_NAME));
             }
 
-            logger.info("Creating index {} with 384-dim dense_vector mapping...", INDEX_NAME);
+            logger.info("Creating index {} with 768-dim dense_vector mapping...", INDEX_NAME);
             elasticsearchClient.indices().create(c -> c
                     .index(INDEX_NAME)
                     .mappings(m -> m
                             .properties("embedding", p -> p
                                     .denseVector(d -> d
-                                            .dims(384)
+                                            .dims(768)
                                             .index(true)
                                             .similarity("cosine")))
                             .properties("incident_id", p -> p.keyword(k -> k))

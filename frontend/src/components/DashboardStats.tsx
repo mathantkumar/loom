@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card } from './ui/Card';
+import { Card } from './brand/Card';
 import type { IncidentStatsResponse } from '../types';
 
 interface DashboardStatsProps {
@@ -12,7 +12,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ stats, onStatusC
         return (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="h-24 bg-gray-100 rounded-lg animate-pulse" />
+                    <div key={i} className="h-32 bg-gray-100 rounded-2xl animate-pulse" />
                 ))}
             </div>
         );
@@ -80,32 +80,32 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ stats, onStatusC
             {cards.map((card, idx) => {
                 const isClickable = !!card.onClick;
                 return (
-                    <div
+                    <Card
                         key={idx}
                         onClick={card.onClick}
-                        className={`${isClickable ? 'cursor-pointer transform hover:-translate-y-1 transition-transform' : ''}`}
+                        className={`h-full transition-all duration-200 border-gray-100 shadow-sm ${isClickable ? 'cursor-pointer hover:-translate-y-1 hover:shadow-md' : ''
+                            }`}
+                        noPadding
                     >
-                        <Card className={`border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200 h-full`}>
-                            <div className="p-6 flex items-center justify-between h-full bg-white rounded-2xl gap-4">
-                                <div className="flex flex-col justify-center gap-1">
-                                    <p className="text-sm font-medium text-gray-500">{card.label}</p>
-                                    <p className="text-3xl font-bold text-gray-900 tracking-tight">{card.value}</p>
-                                </div>
-                                <div className={`p-3 rounded-2xl ${card.color.split(' ')[0]} bg-opacity-50`}>
-                                    <div className="w-8 h-8">
-                                        {React.cloneElement(card.icon as React.ReactElement, {
-                                            className: `w-full h-full ${card.color.includes('red') ? 'text-red-600' :
+                        <div className="p-6 flex items-center justify-between h-full bg-white gap-4">
+                            <div className="flex flex-col justify-center gap-1">
+                                <p className="text-sm font-medium text-gray-500">{card.label}</p>
+                                <p className="text-3xl font-bold text-gray-900 tracking-tight">{card.value}</p>
+                            </div>
+                            <div className={`p-3 rounded-2xl ${card.color.split(' ')[0]} bg-opacity-50`}>
+                                <div className="w-8 h-8">
+                                    {React.cloneElement(card.icon as React.ReactElement, {
+                                        className: `w-full h-full ${card.color.includes('red') ? 'text-red-600' :
                                                 card.color.includes('orange') ? 'text-orange-600' :
                                                     card.color.includes('purple') ? 'text-purple-600' :
                                                         card.color.includes('green') ? 'text-green-600' :
                                                             'text-blue-600'
-                                                }`
-                                        })}
-                                    </div>
+                                            }`
+                                    })}
                                 </div>
                             </div>
-                        </Card>
-                    </div>
+                        </div>
+                    </Card>
                 );
             })}
         </div>

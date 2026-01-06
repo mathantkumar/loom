@@ -1,162 +1,119 @@
 package com.loom.incident_intelligence.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.jelmerk.knn.DistanceFunctions;
-import com.github.jelmerk.knn.SearchResult;
-import com.github.jelmerk.knn.hnsw.HnswIndex;
 import com.loom.incident_intelligence.model.ChunkMetadata;
-import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
 public class RetrievalService {
 
     private static final Logger log = LoggerFactory.getLogger(RetrievalService.class);
+    private static final String INDEX_NAME = "incident_index";
 
     private final EmbeddingService embeddingService;
-    private final ObjectMapper objectMapper;
+    private final ElasticsearchClient elasticsearchClient;
 
-    @Value("${faiss.index-path:./data/incident.index}")
-    private String indexPath;
-
-    @Value("${faiss.metadata-path:./data/metadata.json}")
-    private String metadataPath;
-
-    @Value("${retrieval.top-k:5}")
-    private int defaultTopK;
-
-    // HNSW Index: ID type String, Vector type float[], Item type VectorItem,
-    // Distance type Float
-    private HnswIndex<String, float[], VectorItem, Float> index;
-    private final Map<String, ChunkMetadata> metadataMap = new ConcurrentHashMap<>();
-
-    // Inner class for HNSW Item
-    public static class VectorItem implements com.github.jelmerk.knn.Item<String, float[]> {
-        private static final long serialVersionUID = 1L;
-        private final String id;
-        private final float[] vector;
-
-        public VectorItem(String id, float[] vector) {
-            this.id = id;
-            this.vector = vector;
-        }
-
-        @Override
-        public String id() {
-            return id;
-        }
-
-        @Override
-        public float[] vector() {
-            return vector;
-        }
-
-        @Override
-        public int dimensions() {
-            return vector.length;
-        }
-    }
-
-    // Manual constructor for dependency injection
-    public RetrievalService(EmbeddingService embeddingService, ObjectMapper objectMapper) {
+    public RetrievalService(EmbeddingService embeddingService, ElasticsearchClient elasticsearchClient) {
         this.embeddingService = embeddingService;
-        this.objectMapper = objectMapper;
-    }
-
-    @PostConstruct
-    public void init() {
-        try {
-            // Ensure data directory exists
-            File indexFile = new File(indexPath);
-            File metadataFile = new File(metadataPath);
-            File dataDir = indexFile.getParentFile();
-            if (dataDir != null && !dataDir.exists()) {
-                dataDir.mkdirs();
-            }
-
-            // Load Metadata
-            if (metadataFile.exists()) {
-                List<ChunkMetadata> metadataList = objectMapper.readValue(metadataFile,
-                        new TypeReference<List<ChunkMetadata>>() {
-                        });
-                for (ChunkMetadata meta : metadataList) {
-                    metadataMap.put(meta.getId(), meta);
-                }
-                log.info("Loaded {} metadata entries.", metadataMap.size());
-            }
-
-            // Load Index
-            if (indexFile.exists()) {
-                log.info("Loading existing index from {}", indexFile.getAbsolutePath());
-                index = HnswIndex.load(indexFile);
-            } else {
-                log.info("Creating new HNSW index.");
-                // Dimensions for nomic-embed-text is 768. M=16, efConstruction=100 are
-                // reasonable defaults.
-                index = HnswIndex.newBuilder(768, DistanceFunctions.FLOAT_INNER_PRODUCT, 3000) // max item count
-                        .withM(16)
-                        .withEfConstruction(100)
-                        .build();
-            }
-        } catch (Exception e) {
-            log.error("Failed to initialize RetrievalService", e);
-            // Fallback to empty index to allow app verification even if load fails
-            index = HnswIndex.newBuilder(768, DistanceFunctions.FLOAT_INNER_PRODUCT, 1000).build();
-        }
-    }
-
-    public void addChunk(ChunkMetadata metadata, float[] embedding) {
-        String id = metadata.getId();
-        metadataMap.put(id, metadata);
-        index.add(new VectorItem(id, embedding));
-    }
-
-    public synchronized void save() {
-        try {
-            index.save(new File(indexPath));
-            objectMapper.writeValue(new File(metadataPath), new ArrayList<>(metadataMap.values()));
-            log.info("Saved index and metadata.");
-        } catch (IOException e) {
-            log.error("Error saving index", e);
-        }
+        this.elasticsearchClient = elasticsearchClient;
     }
 
     public List<ChunkMetadata> search(String question, int topK) {
-        if (index == null || index.size() == 0) {
+        try {
+            // 1. Generate Embedding
+            float[] queryVector = embeddingService.embed(question);
+            List<Float> embeddingList = new ArrayList<>();
+            for (float f : queryVector) {
+                embeddingList.add(f);
+            }
+
+            // 2. Build k-NN Search Request
+            SearchRequest searchRequest = SearchRequest.of(s -> s
+                    .index(INDEX_NAME)
+                    .knn(k -> k
+                            .field("embedding")
+                            .queryVector(embeddingList)
+                            .k(topK)
+                            .numCandidates(topK * 10))
+                    .source(src -> src.filter(f -> f.includes(
+                            "incident_id", "title", "description", "root_cause", "service", "status", "created_at"))));
+
+            // 3. Execute Search
+            SearchResponse<Map> response = elasticsearchClient.search(searchRequest, Map.class);
+
+            // 4. Map Results
+            return response.hits().hits().stream()
+                    .map(hit -> {
+                        Map<String, Object> source = hit.source();
+                        if (source == null)
+                            return null;
+
+                        String id = (String) source.getOrDefault("incident_id", hit.id());
+                        String title = (String) source.getOrDefault("title", "");
+                        String description = (String) source.getOrDefault("description", "");
+                        String rootCause = (String) source.getOrDefault("root_cause", "Unknown");
+                        String service = (String) source.getOrDefault("service", "Unknown");
+                        String status = (String) source.getOrDefault("status", "Unknown");
+
+                        String content = String.format("[%s] %s\nDescription: %s\nRoot Cause: %s\nStatus: %s",
+                                service, title, description, rootCause, status);
+
+                        return new ChunkMetadata(
+                                id,
+                                content,
+                                "Incident #" + id,
+                                hit.score());
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
+        } catch (IOException e) {
+            log.error("Error searching incidents in Elasticsearch", e);
+            return Collections.emptyList();
+        } catch (Exception e) {
+            log.error("Unexpected error in RetrievalService", e);
             return Collections.emptyList();
         }
-
-        float[] queryVector = embeddingService.embed(question);
-
-        List<SearchResult<VectorItem, Float>> results = index.findNearest(queryVector, topK);
-
-        return results.stream()
-                .map(result -> metadataMap.get(result.item().id()))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
     }
 
-    // Kept for backward compatibility or test if needed, but search(String) is
-    // preferred
-    public List<ChunkMetadata> retrieve(float[] queryVector) {
-        if (index == null || index.size() == 0)
-            return Collections.emptyList();
+    public void addChunk(ChunkMetadata meta, float[] embedding) {
+        try {
+            Map<String, Object> document = new HashMap<>();
+            document.put("incident_id", meta.getId());
+            document.put("title", meta.getTitle());
+            document.put("description", meta.getText());
+            document.put("service", meta.getSource()); // Map source to service
+            document.put("created_at", meta.getCreated());
+            document.put("embedding", embedding);
+            document.put("root_cause", "Imported Data");
+            document.put("status", "UNKNOWN");
 
-        List<SearchResult<VectorItem, Float>> results = index.findNearest(queryVector, defaultTopK);
+            co.elastic.clients.elasticsearch.core.IndexRequest<Map<String, Object>> request = co.elastic.clients.elasticsearch.core.IndexRequest
+                    .of(i -> i
+                            .index(INDEX_NAME)
+                            .id(meta.getId())
+                            .document(document));
 
-        return results.stream()
-                .map(result -> metadataMap.get(result.item().id()))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+            elasticsearchClient.index(request);
+        } catch (Exception e) {
+            log.error("Failed to index chunk " + meta.getId(), e);
+        }
+    }
+
+    public void save() {
+        try {
+            elasticsearchClient.indices().refresh(r -> r.index(INDEX_NAME));
+        } catch (IOException e) {
+            log.error("Failed to refresh index", e);
+        }
     }
 }

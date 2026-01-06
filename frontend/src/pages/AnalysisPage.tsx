@@ -17,21 +17,26 @@ export const AnalysisPage = () => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                // 1. Fetch Atlas Data
+                // 2. Fetch Atlas Data
                 const health = await sentinelApi.getProjectHealth(selectedProjectId);
-                setProjectRisk(health); // This might fail if backend not ready, will retain null
+                setProjectRisk(health);
 
-                // 2. Fetch Causality Data (Simulate selecting an incident)
-                // In real app, we'd only fetch when incident is selected.
-                // For MVP demo, we try to fetch for a known ID or the mock ID
+                // 3. Fetch Service Causality Graph (Service Impact)
                 try {
-                    const graph = await sentinelApi.getCausalityGraph(selectedIncidentId);
+                    const graph = await sentinelApi.getServiceCausalityGraph(selectedProjectId);
                     setCausalityGraph(graph);
+                } catch (e) {
+                    console.log("Service graph data not available");
+                    setCausalityGraph(null);
+                }
 
-                    const hist = await sentinelApi.getHistoricalContext(selectedIncidentId);
+                // 4. Fetch History (Service Context)
+                try {
+                    const hist = await sentinelApi.getServiceHistoricalContext(selectedProjectId);
                     setHistory(hist);
                 } catch (e) {
-                    console.log("Graph/History data not available for this ID mock");
+                    console.log("History data not available");
+                    setHistory(null);
                 }
 
             } catch (err) {
@@ -107,6 +112,8 @@ export const AnalysisPage = () => {
                     if (node.type === 'INCIDENT') color = "#ef4444"; // red
                     if (node.type === 'SERVICE') color = "#f59e0b"; // amber
                     if (node.type === 'DEPLOYMENT') color = "#3b82f6"; // blue
+                    if (node.type === 'HYPOTHESIS') color = "#a855f7"; // purple
+                    if (node.type === 'SIMILAR_INCIDENT') color = "#10b981"; // emerald
 
                     return (
                         <g key={node.id} transform={`translate(${pos.x}, ${pos.y})`}>
@@ -228,21 +235,28 @@ export const AnalysisPage = () => {
                 {/* 3. SENTINEL MEMORY - HISTORICAL CONTEXT */}
                 <section>
                     <div className="flex items-center gap-2 mb-4">
-                        <History className="w-5 h-5 text-amber-500" />
+                        <History className="w-5 h-5 text-emerald-500" />
                         <h2 className="text-lg font-bold text-slate-800">Organizational Memory</h2>
                     </div>
-                    <div className="bg-white rounded-2xl border border-amber-100 shadow-sm overflow-hidden h-[400px] flex flex-col">
-                        <div className="p-6 bg-amber-50/50 border-b border-amber-100">
-                            <h3 className="text-amber-800 font-bold mb-2 text-sm uppercase tracking-wide">AI Insight</h3>
-                            <p className="text-slate-700 italic">
-                                "{history?.insight || 'Analyzing historical patterns...'}"
-                            </p>
-                        </div>
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                            {history?.similarIncidents?.map((inc, i) => (
+
+                    <div className="bg-white rounded-2xl border border-slate-200 p-4 h-[400px] overflow-y-auto space-y-4 shadow-sm">
+                        {loading && !history ? (
+                            <div className="space-y-4">
+                                {[1, 2, 3].map(i => (
+                                    <div key={i} className="animate-pulse flex gap-4">
+                                        <div className="w-12 h-12 bg-slate-100 rounded-full shrink-0"></div>
+                                        <div className="space-y-2 w-full">
+                                            <div className="h-4 bg-slate-100 rounded w-3/4"></div>
+                                            <div className="h-12 bg-slate-100 rounded w-full"></div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            history?.similarIncidents?.map((inc, i) => (
                                 <div key={i} className="flex gap-4 p-4 rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors">
                                     <div className="shrink-0 pt-1">
-                                        <div className="w-12 h-12 rounded-full bg-slate-100 flex items-col items-center justify-center text-xs font-bold text-slate-500 border-2 border-white shadow-sm">
+                                        <div className="w-12 h-12 rounded-full bg-slate-100 flex flex-col items-center justify-center text-xs font-bold text-slate-500 border-2 border-white shadow-sm">
                                             {(inc.similarityScore * 100).toFixed(0)}%
                                         </div>
                                     </div>
@@ -254,14 +268,15 @@ export const AnalysisPage = () => {
                                         </div>
                                     </div>
                                 </div>
-                            ))}
-                            {!history?.similarIncidents?.length && !loading && (
-                                <div className="p-4 text-center text-slate-400 text-sm">No similar incidents found.</div>
-                            )}
-                        </div>
+                            ))
+                        )}
+
+                        {!history?.similarIncidents?.length && !loading && (
+                            <div className="p-4 text-center text-slate-400 text-sm">No similar incidents found.</div>
+                        )}
                     </div>
                 </section>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };

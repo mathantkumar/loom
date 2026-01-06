@@ -47,9 +47,21 @@ export const sentinelApi = {
         return response.json();
     },
 
+    getServiceCausalityGraph: async (serviceId: string): Promise<CausalityGraph> => {
+        const response = await fetch(`${API_BASE_URL}/sentinel/causality/service/${serviceId}`);
+        if (!response.ok) throw new Error('Failed to fetch service causality graph');
+        return response.json();
+    },
+
     getHistoricalContext: async (incidentId: string): Promise<HistoricalContext> => {
         const response = await fetch(`${API_BASE_URL}/sentinel/memory/${incidentId}`);
         if (!response.ok) throw new Error('Failed to fetch historical context');
+        return response.json();
+    },
+
+    getServiceHistoricalContext: async (serviceId: string): Promise<HistoricalContext> => {
+        const response = await fetch(`${API_BASE_URL}/sentinel/memory/service/${serviceId}`);
+        if (!response.ok) throw new Error('Failed to fetch service historical context');
         return response.json();
     }
 };

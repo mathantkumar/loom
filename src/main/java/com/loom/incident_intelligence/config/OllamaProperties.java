@@ -7,10 +7,12 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "ollama")
 public class OllamaProperties {
     private String baseUrl = "http://127.0.0.1:11434";
-    private String llmModel = "mixtral";
+    private String llmModel = "llama3";
     private String embedModel = "nomic-embed-text";
     private int maxConcurrentGenerations = 2;
     private int topK = 5;
+    private double temperature = 0.2;
+    private int numCtx = 4096;
 
     public String getBaseUrl() {
         return baseUrl;
@@ -50,5 +52,21 @@ public class OllamaProperties {
 
     public void setTopK(int topK) {
         this.topK = topK;
+    }
+
+    public double getTemperature() {
+        return temperature;
+    }
+
+    public void setTemperature(double temperature) {
+        this.temperature = temperature;
+    }
+
+    public int getNumCtx() {
+        return numCtx;
+    }
+
+    public void setNumCtx(int numCtx) {
+        this.numCtx = numCtx;
     }
 }

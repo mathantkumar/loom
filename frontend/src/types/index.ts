@@ -78,8 +78,8 @@ export interface SimilarIncidentResponse {
 
 export interface AnalysisResponse {
     incidentId: string;
-    rootCause: string;
-    resolution: string;
+    probableRootCause: string;
+    recommendedResolution: string;
     confidenceScore: number;
     basedOnIncidentIds: string[];
     hypotheses: Hypothesis[];
@@ -130,4 +130,20 @@ export interface BaselineAnalysisResponse {
     confidenceScore: number;
     explanation: string;
     keyFactors: string[];
+}
+
+export interface TrendAnalysisResponse {
+    trendSummary: string;
+    recurringPatterns: string[];
+    frequencyAnalysis: string;
+    projectedImpact: string;
+    relatedIncidentIds: string[];
+}
+
+export interface EscalationResponse {
+    assigneeName: string;
+    assigneeAvatar: string;
+    eta: string;
+    status: string;
+    deepAnalysisId: string;
 }

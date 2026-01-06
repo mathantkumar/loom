@@ -9,6 +9,10 @@ import java.util.UUID;
 
 @Repository
 public interface DeploymentRepository extends JpaRepository<Deployment, UUID> {
+    java.util.List<Deployment> findTop5ByOrderByDeploymentTimeDesc();
+
+    java.util.List<Deployment> findTop3ByServiceNameOrderByDeploymentTimeDesc(String serviceName);
+
     List<Deployment> findByServiceNameAndEnvironmentAndDeploymentTimeAfter(
             String serviceName, String environment, Instant cutoffTime);
 }

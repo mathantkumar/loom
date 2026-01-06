@@ -22,4 +22,14 @@ public class QueryRequest {
     public void setStream(boolean stream) {
         this.stream = stream;
     }
+
+    private java.util.UUID sessionId;
+
+    public java.util.UUID getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(java.util.UUID sessionId) {
+        this.sessionId = sessionId;
+    }
 }

@@ -15,7 +15,7 @@ class EmbeddingServiceTest {
         float[] expected = new float[768];
         expected[0] = 0.5f;
 
-        when(mockClient.getEmbedding(anyString())).thenReturn(expected);
+        when(mockClient.getEmbeddingInternal(anyString())).thenReturn(expected);
 
         EmbeddingService service = new EmbeddingService(mockClient);
         float[] result = service.embed("Test chunk");

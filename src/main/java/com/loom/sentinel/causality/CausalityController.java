@@ -19,4 +19,10 @@ public class CausalityController {
         CausalityGraph graph = causalityService.buildGraph(incidentId);
         return ResponseEntity.ok(graph);
     }
+
+    @GetMapping("/service/{serviceId}")
+    public ResponseEntity<CausalityGraph> getServiceCausalityGraph(@PathVariable String serviceId) {
+        CausalityGraph graph = causalityService.buildServiceGraph(serviceId);
+        return ResponseEntity.ok(graph);
+    }
 }

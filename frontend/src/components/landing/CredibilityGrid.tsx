@@ -32,7 +32,7 @@ export const CredibilityGrid: React.FC = () => {
 
             <div className="max-w-7xl mx-auto px-6 relative z-10">
                 <div className="mb-16">
-                    <h2 className="text-3xl font-bold sm:text-4xl mb-4">
+                    <h2 className="text-3xl font-display font-bold sm:text-4xl mb-4">
                         Built on Deep Intelligence.
                     </h2>
                     <p className="text-gray-400 max-w-2xl text-lg">
@@ -51,7 +51,7 @@ export const CredibilityGrid: React.FC = () => {
                             className="group"
                         >
                             <div className="flex items-baseline justify-between border-b border-gray-800 pb-4 mb-4 group-hover:border-blue-500/50 transition-colors">
-                                <h3 className="text-xl font-semibold text-white">{item.title}</h3>
+                                <h3 className="text-xl font-display font-semibold text-white">{item.title}</h3>
                                 <span className="text-xs font-mono text-blue-400 bg-blue-900/20 px-2 py-1 rounded">{item.stats}</span>
                             </div>
                             <p className="text-gray-400 leading-relaxed group-hover:text-gray-300 transition-colors">

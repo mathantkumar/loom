@@ -39,7 +39,7 @@ export const ProblemGrid: React.FC = () => {
         <section className="py-24 bg-white">
             <div className="max-w-7xl mx-auto px-6">
                 <div className="text-center mb-16">
-                    <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl mb-4">
+                    <h2 className="text-3xl font-display font-bold text-gray-900 sm:text-4xl mb-4">
                         Stop Fighting Fires. <span className="text-gray-400">Start Predicting Them.</span>
                     </h2>
                     <p className="text-lg text-gray-500 max-w-2xl mx-auto">
@@ -60,7 +60,7 @@ export const ProblemGrid: React.FC = () => {
                             <div className="mb-4 bg-white w-12 h-12 rounded-xl flex items-center justify-center shadow-sm">
                                 {f.icon}
                             </div>
-                            <h3 className="text-xl font-semibold text-gray-900 mb-3">{f.title}</h3>
+                            <h3 className="text-xl font-display font-semibold text-gray-900 mb-3">{f.title}</h3>
                             <p className="text-gray-600 leading-relaxed">{f.description}</p>
                         </motion.div>
                     ))}

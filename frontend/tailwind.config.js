@@ -8,7 +8,9 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Outfit', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        landing: ['Manrope', 'sans-serif'],
+        display: ['"Bricolage Grotesque"', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace'],
       },
       colors: {
         sentinel: {

@@ -19,4 +19,10 @@ public class MemoryController {
         HistoricalContext context = memoryService.getHistoricalContext(incidentId);
         return ResponseEntity.ok(context);
     }
+
+    @GetMapping("/service/{serviceId}")
+    public ResponseEntity<HistoricalContext> getServiceHistoricalContext(@PathVariable String serviceId) {
+        HistoricalContext context = memoryService.getServiceHistoricalContext(serviceId);
+        return ResponseEntity.ok(context);
+    }
 }

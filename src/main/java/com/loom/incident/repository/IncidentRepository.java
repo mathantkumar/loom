@@ -17,4 +17,6 @@ public interface IncidentRepository extends JpaRepository<Incident, UUID> {
     java.util.List<Incident> findByServiceAndCreatedAtAfter(String service, java.time.Instant createdAt);
 
     java.util.List<Incident> findByAssigneeName(String assigneeName);
+
+    java.util.List<Incident> findTop5ByServiceOrderByCreatedAtDesc(String service);
 }

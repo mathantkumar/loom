@@ -2,13 +2,11 @@ package com.loom.incident.api;
 
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
-import java.util.UUID;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.loom.incident.domain.Incident;
-import com.loom.incident.repository.IncidentRepository;
 import com.loom.sentinel.code.IncidentCodeCorrelation;
 import com.loom.sentinel.code.IncidentCodeCorrelationRepository;
 import com.loom.sentinel.code.CodeIncidentCorrelationService;

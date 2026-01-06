@@ -9,6 +9,15 @@ public class ChunkMetadata {
     private String text;
     private String created;
     private List<String> tags;
+    private double score;
+
+    public double getScore() {
+        return score;
+    }
+
+    public void setScore(double score) {
+        this.score = score;
+    }
 
     public ChunkMetadata() {
     }
@@ -20,6 +29,13 @@ public class ChunkMetadata {
         this.text = text;
         this.created = created;
         this.tags = tags;
+    }
+
+    public ChunkMetadata(String id, String text, String title, double score) {
+        this.id = id;
+        this.text = text;
+        this.title = title;
+        this.score = score;
     }
 
     public static Builder builder() {

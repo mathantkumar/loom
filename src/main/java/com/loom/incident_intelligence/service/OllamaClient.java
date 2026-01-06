@@ -1,5 +1,6 @@
 package com.loom.incident_intelligence.service;
 
+import reactor.core.publisher.Flux;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,8 +21,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
+import com.loom.incident.ai.EmbeddingClient;
+
 @Service
-public class OllamaClient {
+@org.springframework.context.annotation.Primary
+public class OllamaClient implements EmbeddingClient {
 
     private static final Logger log = LoggerFactory.getLogger(OllamaClient.class);
 
@@ -65,9 +69,9 @@ public class OllamaClient {
         payload.setModel(ollamaProperties.getLlmModel());
         payload.setMessages(messages);
         payload.setStream(stream);
-        payload.setTemperature(0.0);
-        payload.setTop_p(1.0);
-        // payload.setMax_tokens(2000); // Optional default
+        payload.setTemperature(ollamaProperties.getTemperature());
+        payload.setNum_ctx(ollamaProperties.getNumCtx());
+        payload.setTop_p(0.9);
 
         try {
             String json = objectMapper.writeValueAsString(payload);
@@ -91,7 +95,76 @@ public class OllamaClient {
         }
     }
 
-    public float[] getEmbedding(String text) {
+    public Flux<String> streamChat(List<Message> messages) {
+        return Flux.create(sink -> {
+            try {
+                semaphore.acquire();
+
+                String url = ollamaProperties.getBaseUrl() + "/api/chat";
+                HttpPost post = new HttpPost(url);
+
+                // Set extended timeout for streaming
+                RequestConfig config = RequestConfig.custom()
+                        .setResponseTimeout(Timeout.ofMinutes(2))
+                        .setConnectTimeout(Timeout.ofSeconds(60))
+                        .build();
+                post.setConfig(config);
+
+                ChatPayload payload = new ChatPayload();
+                payload.setModel(ollamaProperties.getLlmModel());
+                payload.setMessages(messages);
+                payload.setStream(true);
+                payload.setTemperature(ollamaProperties.getTemperature());
+                payload.setNum_ctx(ollamaProperties.getNumCtx());
+
+                String json = objectMapper.writeValueAsString(payload);
+                post.setEntity(new StringEntity(json, StandardCharsets.UTF_8));
+                post.setHeader("Content-Type", "application/json");
+
+                httpClient.execute(post, response -> {
+                    if (response.getCode() != 200) {
+                        sink.error(new RuntimeException("Ollama stream failed: " + response.getCode()));
+                        return null;
+                    }
+
+                    try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                            new java.io.InputStreamReader(response.getEntity().getContent(), StandardCharsets.UTF_8))) {
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            JsonNode node = objectMapper.readTree(line);
+                            if (node.has("message") && node.get("message").has("content")) {
+                                String content = node.get("message").get("content").asText();
+                                sink.next(content);
+                            }
+                            if (node.has("done") && node.get("done").asBoolean()) {
+                                sink.complete();
+                                break;
+                            }
+                        }
+                    } catch (Exception e) {
+                        sink.error(e);
+                    }
+                    return null;
+                });
+            } catch (Exception e) {
+                sink.error(e);
+            } finally {
+                semaphore.release();
+            }
+        });
+    }
+
+    @Override
+    public List<Double> getEmbedding(String text) {
+        float[] embedding = getEmbeddingInternal(text);
+        List<Double> result = new java.util.ArrayList<>(embedding.length);
+        for (float f : embedding) {
+            result.add((double) f);
+        }
+        return result;
+    }
+
+    public float[] getEmbeddingInternal(String text) {
         String url = ollamaProperties.getBaseUrl() + "/api/embeddings";
         HttpPost post = new HttpPost(url);
 
@@ -138,6 +211,7 @@ public class OllamaClient {
         private double temperature;
         private double top_p;
         private Integer max_tokens;
+        private int num_ctx;
 
         public String getModel() {
             return model;
@@ -185,6 +259,14 @@ public class OllamaClient {
 
         public void setMax_tokens(Integer max_tokens) {
             this.max_tokens = max_tokens;
+        }
+
+        public int getNum_ctx() {
+            return num_ctx;
+        }
+
+        public void setNum_ctx(int num_ctx) {
+            this.num_ctx = num_ctx;
         }
     }
 

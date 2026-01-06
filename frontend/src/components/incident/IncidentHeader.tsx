@@ -1,5 +1,6 @@
 import React from 'react';
-import { Bot } from 'lucide-react';
+import { Bot, Video } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { SeverityBadge } from '../ui/Badge';
 import { StatusSelect } from '../StatusSelect';
 import type { Incident, IncidentStatus } from '../../types';
@@ -31,6 +32,14 @@ export const IncidentHeader: React.FC<IncidentHeaderProps> = ({ incident, onStat
                 </div>
 
                 <div className="flex items-center text-sm text-slate-500 gap-4">
+                    <Link
+                        to={`/huddle/${incident.id}`}
+                        target="_blank"
+                        className="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition-colors text-xs font-semibold shadow-sm shadow-indigo-200"
+                    >
+                        <Video className="w-3.5 h-3.5" />
+                        Join Huddle
+                    </Link>
                     <span>{incident.service}</span>
                     <span className="text-slate-300">|</span>
                     <span>{new Date(incident.createdAt).toLocaleTimeString()}</span>

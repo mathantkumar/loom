@@ -50,6 +50,27 @@ public class AIAnalysisService {
         return parseAiOutput(incidentId, aiOutput, similarIncidents);
     }
 
+    public com.loom.incident.api.dto.TrendAnalysisResponse analyzeTrends(UUID incidentId) {
+        // Mock trend analysis for now
+        // In a real scenario, this would aggregate stats from Elasticsearch
+        // and ask the LLM to interpret the time-series data.
+
+        List<UUID> relatedIds = List.of(
+                UUID.randomUUID(),
+                UUID.randomUUID());
+
+        List<String> patterns = List.of(
+                "Latency spikes correlate with Monday morning traffic",
+                "Database connection pool exhaustion repeats every 2 weeks");
+
+        return new com.loom.incident.api.dto.TrendAnalysisResponse(
+                "Increasing frequency of connection timeouts in the Payment Service over the last 30 days.",
+                patterns,
+                "3 occurrences in the last month (previous avg: 0.5/month)",
+                "High risk of cascading failure if connection pool limits are not increased.",
+                relatedIds);
+    }
+
     private String buildPrompt(Incident current, List<SimilarIncidentResponse> similar) {
         StringBuilder sb = new StringBuilder();
         sb.append(

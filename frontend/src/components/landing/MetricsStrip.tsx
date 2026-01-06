@@ -20,7 +20,7 @@ export const MetricsStrip: React.FC = () => {
                         transition={{ delay: i * 0.1 }}
                         className="text-center flex-1 min-w-[150px]"
                     >
-                        <div className="text-4xl font-bold text-gray-900 tracking-tight mb-1">{s.value}</div>
+                        <div className="text-4xl font-display font-bold text-gray-900 tracking-tight mb-1">{s.value}</div>
                         <div className="text-sm font-medium text-gray-500 uppercase tracking-wide">{s.label}</div>
                     </motion.div>
                 ))}

@@ -27,7 +27,7 @@ public class EmbeddingService {
     public float[] embed(String text) {
         return cache.get(text, key -> {
             log.debug("Cache miss for embedding. Calling Ollama...");
-            return ollamaClient.getEmbedding(key);
+            return ollamaClient.getEmbeddingInternal(key);
         });
     }
 }

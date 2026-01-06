@@ -7,7 +7,7 @@ import { MetricsStrip } from '../components/landing/MetricsStrip';
 
 export const HomePage: React.FC = () => {
     return (
-        <div className="bg-white min-h-screen">
+        <div className="bg-white min-h-screen font-landing">
             <HeroSection />
             <MetricsStrip />
             <ProblemGrid />
@@ -17,7 +17,7 @@ export const HomePage: React.FC = () => {
             {/* Final CTA */}
             <section className="py-24 bg-white text-center">
                 <div className="max-w-3xl mx-auto px-6">
-                    <h2 className="text-4xl font-bold text-gray-900 mb-6">
+                    <h2 className="text-4xl font-display font-bold text-gray-900 mb-6">
                         Sentinel doesn't manage incidents. <br />
                         <span className="text-blue-600">It understands them.</span>
                     </h2>

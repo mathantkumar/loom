@@ -40,7 +40,7 @@ server:
 
 ollama:
   base-url: http://127.0.0.1:11434
-  llm-model: mixtral
+  llm-model: llama3
   embed-model: nomic-embed-text
   max-concurrent-generations: 2
 

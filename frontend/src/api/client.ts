@@ -1,4 +1,4 @@
-import type { Incident, IncidentStatus, IncidentTimelineResponse, SimilarIncidentResponse, AnalysisResponse, IncidentStatsResponse, SearchOptions, BaselineAnalysisResponse, IncidentRequest } from '../types';
+import type { Incident, IncidentStatus, IncidentTimelineResponse, SimilarIncidentResponse, AnalysisResponse, IncidentStatsResponse, SearchOptions, BaselineAnalysisResponse, IncidentRequest, EscalationResponse, TrendAnalysisResponse } from '../types';
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loom-production-d02f.up.railway.app/api';
 const INCIDENTS_ENDPOINT = `${API_BASE_URL}/incidents`;
@@ -65,6 +65,12 @@ export const api = {
     checkAnomalyTrend: async (id: string): Promise<{ riskLevel: string, message: string, confidence: number }> => {
         const res = await fetch(`${INCIDENTS_ENDPOINT}/${id}/anomaly-trend`);
         if (!res.ok) throw new Error('Failed to check anomaly trend');
+        return res.json();
+    },
+
+    analyzeTrends: async (id: string): Promise<TrendAnalysisResponse> => {
+        const res = await fetch(`${INCIDENTS_ENDPOINT}/${id}/trends`, { method: 'POST' });
+        if (!res.ok) throw new Error('Failed to analyze trends');
         return res.json();
     },
 
@@ -164,6 +170,12 @@ export const api = {
     getPulseData: async (): Promise<any> => {
         const res = await fetch(`${API_BASE_URL}/sentinel/pulse/data`);
         if (!res.ok) throw new Error('Failed to fetch pulse data');
+        return res.json();
+    },
+
+    escalateIncident: async (id: string): Promise<EscalationResponse> => {
+        const res = await fetch(`${INCIDENTS_ENDPOINT}/${id}/escalate`, { method: 'POST' });
+        if (!res.ok) throw new Error('Failed to escalate incident');
         return res.json();
     }
 };

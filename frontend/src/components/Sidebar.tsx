@@ -13,7 +13,8 @@ import {
     Menu,
     ChevronLeft,
     Heart,
-    Sparkles
+    Sparkles,
+    GitBranch
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -46,6 +47,7 @@ export function Sidebar({ className }: SidebarProps) {
                 { icon: BarChart2, label: 'Stats & History', path: '/stats' },
                 { icon: Bell, label: 'Alerts', path: '/alerts' },
                 { icon: Sparkles, label: 'Ask Sentinel', path: '/ask' },
+                { icon: GitBranch, label: 'Integrations', path: '/integrations' },
             ]
         },
         {
@@ -67,13 +69,10 @@ export function Sidebar({ className }: SidebarProps) {
         >
             {/* Header / Logo Area */}
             <div className="h-16 flex items-center px-4 border-b border-gray-800 justify-between">
-                {!collapsed && (
-                    <SentinelLogo variant="full" size="md" mode="dark" />
-                )}
-                {collapsed && (
-                    <div className="mx-auto">
-                        <SentinelLogo variant="symbol" size="sm" mode="dark" />
-                    </div>
+                {!collapsed ? (
+                    <SentinelLogo variant="wordmark" size="md" mode="dark" />
+                ) : (
+                    <div />
                 )}
 
                 <button

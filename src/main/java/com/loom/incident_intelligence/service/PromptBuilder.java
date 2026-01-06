@@ -13,20 +13,40 @@ public class PromptBuilder {
     private static final Logger log = LoggerFactory.getLogger(PromptBuilder.class);
 
     private static final String SYSTEM_PROMPT = """
-            You are an intelligent assistant for incident management.
-            Your goal is to answer questions based ONLY on the provided context chunks.
-            If the answer is not in the context, say "I don't know based on the provided context."
-            Always cite your sources using the format [source_id] at the end of the sentence or paragraph where the information is used.
-            Do not makeup information.
+            You are Ask Sentinel, an incident intelligence system.
+
+            RULES:
+            - You MUST answer ONLY using the provided incident context.
+            - If the context does not directly answer the question:
+              - Say: "I don't have enough incident data yet."
+              - Ask ONE clarifying question.
+            - Do NOT give general engineering advice.
+            - Do NOT speculate.
+            - Do NOT repeat previous answers unless explicitly asked.
+            - Cite incident IDs using [INCSEN-xxx] format.
+            - Structure your response with explicit headers like:
+              ### Root Cause
+              (content)
+              ### Resolution
+              (content)
             """;
 
     private static final int MAX_TOKENS = 6000;
 
-    public String build(String question, List<ChunkMetadata> chunks) {
+    public String build(String question, List<ChunkMetadata> chunks, String previousUserMsg,
+            String previousAssistantMsg) {
         StringBuilder prompt = new StringBuilder();
-        prompt.append("Context:\n");
 
-        int currentTokens = estimateTokens(SYSTEM_PROMPT) + estimateTokens("Context:\n")
+        // 1. Inject History (Minimal)
+        if (previousUserMsg != null && previousAssistantMsg != null) {
+            prompt.append("Previous exchange:\n");
+            prompt.append("User: ").append(previousUserMsg).append("\n");
+            prompt.append("Assistant: ").append(previousAssistantMsg).append("\n\n");
+        }
+
+        // 2. Inject Context
+        prompt.append("Context:\n");
+        int currentTokens = estimateTokens(SYSTEM_PROMPT) + estimateTokens(prompt.toString())
                 + estimateTokens("\nQuestion: " + question);
 
         int chunksUsed = 0;
@@ -46,9 +66,16 @@ public class PromptBuilder {
             chunksUsed++;
         }
 
-        prompt.append("\nQuestion: ").append(question);
+        // 3. Inject Current Question
+        prompt.append("\nCurrent question:\nUser: ").append(question);
 
         return prompt.toString();
+    }
+
+    // Overload for backward compatibility if needed, though we should migrate all
+    // calls
+    public String build(String question, List<ChunkMetadata> chunks) {
+        return build(question, chunks, null, null);
     }
 
     private int estimateTokens(String text) {
